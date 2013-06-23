@@ -2,7 +2,7 @@ describe('The class Stream', function () {
   'use strict';
 
   var origin = window.location.origin,
-      storiesPath = origin + '/spec/stories',
+      storiesPath = 'spec/stories',
       referenceIndexSource = '["story1","story2"]',
       referenceIndex = {
         paths: JSON.parse(referenceIndexSource).map(function (storyName) {

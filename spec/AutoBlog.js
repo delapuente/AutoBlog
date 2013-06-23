@@ -5,9 +5,9 @@ describe('The class AutoBlog', function () {
   beforeEach(function () {
     var body = document.createElement('BODY');
     mainStream = document.createElement('SECTION');
-    mainStream.dataset.stream = '/spec/stories';
+    mainStream.dataset.stream = 'spec/stories';
     haikuStream = document.createElement('SECTION');
-    haikuStream.dataset.stream = '/spec/haikus';
+    haikuStream.dataset.stream = 'spec/haikus';
     body.appendChild(mainStream);
     body.appendChild(haikuStream);
     dom = document.createDocumentFragment();
@@ -42,7 +42,7 @@ describe('The class AutoBlog', function () {
       runs(function () {
         var streamPlaceholder = {
           placeholder: mainStream,
-          stream: new Stream('/spec/stories')
+          stream: new Stream('spec/stories')
         };
         autoblog.fillPlaceholder(streamPlaceholder).then(function (result) {
           finished = true;
