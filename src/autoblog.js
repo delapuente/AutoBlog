@@ -286,7 +286,7 @@
   };
 
   AutoBlog.getDefaultStream = function () {
-    return window.location.origin + '/stories';
+    return 'stories';
   };
 
   AutoBlog.prototype.getStreamPlaceholders = function () {
