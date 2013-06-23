@@ -1,0 +1,95 @@
+html, header, body, p, td, th, h1 {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans;
+}
+
+html {
+  font-size: 100%;
+}
+
+body {
+  background-color: #F7F7F7;
+}
+
+p {
+  margin: 0.2rem 0 0.7rem 0;
+  font-size: 1rem;
+  text-shadow: 0 0.1rem 0 #FFF;
+  text-align: justify;
+  color: #666;
+  font-weight: bold;
+}
+
+.title {
+  width: 100%;
+  height: 10rem;
+  background: #ffa84c;
+  background: linear-gradient(to bottom,  #ffa84c 0%, #ff7b0d 100%);
+  color: white;
+}
+
+.title h1 {
+  line-height: 9rem;
+  margin-left: 3rem;
+  font-size: 4rem;
+  text-shadow: 0 0.1rem 0 #ccc,
+               0 0.2rem 0 #c9c9c9,
+               0 0.3rem 0 #bbb,
+               0 0.4rem 0 #b9b9b9,
+               0 0.5rem 0 #aaa,
+               0 0.6rem 0.1rem rgba(0,0,0,.1),
+               0 0 0.5rem rgba(0,0,0,.1),
+               0 0.1rem 0.3rem rgba(0,0,0,.3),
+               0 0.3rem 0.5rem rgba(0,0,0,.2),
+               0 0.5rem 1rem rgba(0,0,0,.25),
+               0 1rem 1rem rgba(0,0,0,.2),
+               0 2rem 2rem rgba(0,0,0,.15);
+}
+
+.stories {
+  margin: 2rem;
+  max-width: 800px;
+}
+
+.stories article {
+  padding: 1rem;
+  position: relative;
+  clear: both;
+}
+
+.stories article h1 {
+  color: #FF7B0D;
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  text-shadow: 0 -0.15rem 0 #D3660C,
+               0 +0.2rem 0.1rem white;
+}
+
+.stories article aside {
+  background-color: white;
+  display: inline-block;
+  height: 3rem;
+  font-weight: bold;
+  padding: 1rem;
+  text-align: center;
+  position: relative;
+  border: 0.2rem solid #FF7B0D;
+  float: right;
+  box-shadow: 0.15rem 0.3 rem 0.1rem #777;
+}
+
+.stories article aside p {
+  font-style: italic;
+  font-size: 1.2rem;
+  line-height: 1rem;
+}
+
+.stories article aside time {
+  position: absolute;
+  bottom: 0rem;
+  left: 0; right: 0;
+  padding: 0.5rem 0 0.3rem 0;
+  background-color: #FF7B0D;
+  color: white;
+}
