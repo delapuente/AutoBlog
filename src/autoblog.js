@@ -267,6 +267,89 @@
     ;
   };
 
+  var Plugins = AutoBlog.Plugins = Object.create(null);
+  var XRender = Plugins.XRender = function (storyPath) {
+    var lastPoint = storyPath.lastIndexOf('.');
+    this._extension = storyPath.substring(lastPoint+1);
+    this._renderClass = XRender._selectRender(this._extension);
+  }
+  XRender._selectRender = function (extension) {
+    var render, hooks = XRender.Hooks;
+    if (extension in hooks && Array.isArray(hooks[extension])) {
+      var i = 0, renders = hooks[extension];
+      while (render = renders[i++]) {
+        if (render.enabled) {
+          return render;
+        }
+      }
+    }
+    return render;
+  }
+  XRender._renderClasssDefinedFor = function (extension) {
+    return (extension in XRender.Hooks) &&
+           Array.isArray(XRender.Hooks[extension]);
+  }
+  XRender.addRender = function (render) {
+    var extension = render.extension;
+    if (!XRender._renderClasssDefinedFor(extension)) {
+      XRender.Hooks[extension] = [];
+    }
+    XRender.Hooks[extension].push(render);
+  };
+  XRender.removeRender = function (render) {
+    var renderPosition, extension = render.extension;
+    if (XRender._renderClasssDefinedFor(extension)) {
+      var renders = XRender.Hooks[extension];
+      renderPosition = renders.lastIndexOf(render);
+      while (renderPosition > -1) {
+        renders.splice(renderPosition, 1);
+        renderPosition = renders.lastIndexOf(render);
+      }
+    }
+  };
+  XRender.prototype.getRender = function () {
+    return this._renderClass;
+  };
+  XRender.prototype.render = function (text, section) {
+    var renderInstance = new this._renderClass();
+    return renderInstance.render(text, section)
+  }
+  to(XRender.prototype)
+    .addGet('extension', function () { return this._extension; });
+
+  XRender.Hooks = Object.create(null);
+  XRender.Hooks.md = [];
+  XRender.Hooks.html = [];
+
+  var MDRender = Plugins.MDRender = function () {
+    this._converter = new Showdown.converter();
+  };
+  MDRender.extension = 'md';
+  to(MDRender)
+    .addGet('enabled', function () {
+      return Showdown && Showdown.converter;
+    });
+
+  MDRender.prototype.render = function (text) {
+    return this._converter.makeHTML(text);
+  };
+  XRender.addRender(MDRender);
+
+  var TXTRender = Plugins.TXTRender = function () {
+    this._helperToEscape = document.createElement('DIV');
+  };
+  TXTRender.extension = 'txt';
+  TXTRender.enabled = true;
+
+  TXTRender.prototype.render = function (text) {
+    this._helperToEscape.textContent = text;
+    return this._helperToEscape.innerHTML;
+  };
+  XRender.addRender(TXTRender);
+
+  var HTMLRender = Plugins.HTMLRender = function () {
+
+  };
   var defaultStoryTemplate =
   '<article data-container>\n' +
     '<header><h1 data-title></h1></header>\n' +
