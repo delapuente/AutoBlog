@@ -1,4 +1,4 @@
-html, header, body, p, td, th, h1 {
+html, header, body, p, td, th, h1, li {
   margin: 0;
   padding: 0;
   font-family: Arial, sans;
@@ -12,13 +12,37 @@ body {
   background-color: #F7F7F7;
 }
 
-p {
+p, li, pre {
   margin: 0.2rem 0 0.7rem 0;
   font-size: 1rem;
   text-shadow: 0 0.1rem 0 #FFF;
   text-align: justify;
   color: #666;
   font-weight: bold;
+  line-height: 1.5rem;
+}
+
+code {
+  border: 0.1rem #BBB dashed;
+  background-color: white;
+  padding: 0.1rem;
+}
+
+pre code {
+  border: none;
+  background-color: transparent;
+  padding: none;
+}
+
+pre {
+  border: 0.1rem #BBB dashed;
+  background-color: white;
+  padding: 0.4rem;
+  overflow: auto;
+}
+
+strong {
+  color: #111;
 }
 
 .title {

@@ -109,4 +109,52 @@ describe('The class Story', function () {
     }
   );
 
+  it('supports sequences +++ and --- in the body by using \\+++ and \\---',
+    function () {
+      var source =
+      'Title\n' +
+      'A body using\n' +
+      '\\+++\n' +
+      'and\n' +
+      '\\---\n' +
+      'as part of the body';
+      var expectedBody =
+      'A body using\n' +
+      '+++\n' +
+      'and\n' +
+      '---\n' +
+      'as part of the body';
+      var story;
+      function parse() {
+        story = new AutoBlog.Story(source);
+      }
+      expect(parse).not.toThrow();
+      expect(story.body).toBe(expectedBody);
+    }
+  );
+
+  it('supports double scaping to allow writing \\+++ and \\---',
+    function () {
+      var source =
+      'Title\n' +
+      'A body using\n' +
+      '\\\\+++\n' +
+      'and\n' +
+      '\\\\---\n' +
+      'as part of the body';
+      var expectedBody =
+      'A body using\n' +
+      '\\+++\n' +
+      'and\n' +
+      '\\---\n' +
+      'as part of the body';
+      var story;
+      function parse() {
+        story = new AutoBlog.Story(source);
+      }
+      expect(parse).not.toThrow();
+      expect(story.body).toBe(expectedBody);
+    }
+  );
+
 });

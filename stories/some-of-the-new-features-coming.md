@@ -2,7 +2,7 @@ Some of the new features coming...
 AutoBlog will be full of awesome features, some of them are listed
 here:
 +++
- * Markdown support.
+ * <del>Markdown support</del>.
  * Story template customization.
  * Readmore support.
  * Pagination.

@@ -87,8 +87,14 @@
     var excerpt = excerptAndBody.length === 2 ?
                   excerptAndBody[0] : undefined;
 
-    if (body) { body = removeTrailingBreaks(body); }
-    if (excerpt) { excerpt = removeTrailingBreaks(excerpt); }
+    if (body) {
+      body = removeTrailingBreaks(body);
+      body = replaceScapedSequences(body);
+    }
+    if (excerpt) {
+      excerpt = removeTrailingBreaks(excerpt);
+      excerpt = replaceScapedSequences(excerpt);
+    }
 
     return {
       title: title,
@@ -97,7 +103,14 @@
     };
 
     function removeTrailingBreaks(string) {
-      return string.replace(/(\n)+$/mg, '');
+      return string.replace(/(\n)+$/g, '');
+    }
+
+    function replaceScapedSequences(string) {
+      string = string.replace(/^\\\+\+\+/mg, '+++');
+      string = string.replace(/^\\---/mg, '---');
+      string = string.replace(/^\\\\/mg, '\\');
+      return string;
     }
   };
 

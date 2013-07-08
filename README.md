@@ -1,0 +1,1 @@
+stories/introducing-autoblog.md
