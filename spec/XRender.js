@@ -56,14 +56,9 @@ describe('The XRender render', function () {
 
   it('supports a built-in render for Markdown',
     function () {
-      window.Showdown = {
-        converter: function () {}
-      };
       var storyPath = 'story.md';
       var xRender = new AutoBlog.Plugins.XRender(storyPath);
-      expect(xRender.getRender().extension).toBe('md');
-
-      delete window.Showdown;
+      expect(xRender.getRenderClass().extension).toBe('md');
     }
   );
 
@@ -71,7 +66,7 @@ describe('The XRender render', function () {
     function () {
       var storyPath = 'story.txt';
       var xRender = new AutoBlog.Plugins.XRender(storyPath);
-      expect(xRender.getRender().extension).toBe('txt');
+      expect(xRender.getRenderClass().extension).toBe('txt');
     }
   );
 
@@ -87,6 +82,28 @@ describe('The XRender render', function () {
       xRender.render(testText, testSection);
       expect(MockRender.prototype.render)
         .toHaveBeenCalledWith(testText, testSection);
+    }
+  );
+
+  it('has an autodiscover() utility to add available renders to the hooks.',
+    function () {
+      window.TestRender1 = function () {};
+      window.TestRender1.extension = 'a';
+      window.TestRender2 = function () {};
+      window.TestRender2.extension = 'b';
+      window.TestRender3 = function () {};
+      window.TestRender3.extension = 'c';
+
+      var XRender = AutoBlog.Plugins.XRender;
+      XRender.autodiscover();
+
+      expect(XRender.Hooks.a).toEqual([window.TestRender1]);
+      expect(XRender.Hooks.b).toEqual([window.TestRender2]);
+      expect(XRender.Hooks.c).toEqual([window.TestRender3]);
+
+      delete window.TestRender1;
+      delete window.TestRender2;
+      delete window.TestRender3;
     }
   );
 

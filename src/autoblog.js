@@ -219,7 +219,8 @@
 
   Stream.prototype.loadIndex = function () {
     var self = this;
-    var indexPath = this.path + '/index.json#' + Date.now();
+    var indexPath = this.path + '/index.json?uid=' + Date.now();
+    console.log(indexPath);
     return getURL(indexPath).then(parseIndex).then(storeIndex);
 
     function parseIndex(indexSource) {
@@ -269,10 +270,17 @@
 
   var Plugins = AutoBlog.Plugins = Object.create(null);
   var XRender = Plugins.XRender = function (storyPath) {
-    var lastPoint = storyPath.lastIndexOf('.');
-    this._extension = storyPath.substring(lastPoint+1);
-    this._renderClass = XRender._selectRender(this._extension);
+    var extension, renderInstance, renderClass,
+        lastPoint = storyPath.lastIndexOf('.');
+    extension = storyPath.substring(lastPoint+1);
+    renderClass = XRender._selectRender(extension) || NoopRender;
+    renderInstance = new renderClass(storyPath);
+    to(this)
+      .addGet('extension', function () { return extension; })
+      .addGet('renderInstance', function () { return renderInstance; })
+    ;
   }
+
   XRender._selectRender = function (extension) {
     var render, hooks = XRender.Hooks;
     if (extension in hooks && Array.isArray(hooks[extension])) {
@@ -284,10 +292,6 @@
       }
     }
     return render;
-  }
-  XRender._renderClasssDefinedFor = function (extension) {
-    return (extension in XRender.Hooks) &&
-           Array.isArray(XRender.Hooks[extension]);
   }
   XRender.addRender = function (render) {
     var extension = render.extension;
@@ -307,22 +311,40 @@
       }
     }
   };
-  XRender.prototype.getRender = function () {
-    return this._renderClass;
+  XRender._renderClasssDefinedFor = function (extension) {
+    return (extension in XRender.Hooks) &&
+           Array.isArray(XRender.Hooks[extension]);
+  };
+  XRender.autodiscover = function () {
+    for (var globalName in window) {
+      var renderCandidate = window[globalName];
+      if (isRender(renderCandidate)) {
+        XRender.addRender(renderCandidate)
+      }
+    }
+
+    function isRender(renderCandidate) {
+      return (typeof renderCandidate === 'function') &&
+             ('extension' in renderCandidate);
+    }
+  };
+
+  XRender.prototype.getRenderClass = function () {
+    return this.renderInstance.constructor;
   };
   XRender.prototype.render = function (text, section) {
-    var renderInstance = new this._renderClass();
-    return renderInstance.render(text, section)
-  }
-  to(XRender.prototype)
-    .addGet('extension', function () { return this._extension; });
+    return this.renderInstance.render(text, section);
+  };
 
   XRender.Hooks = Object.create(null);
   XRender.Hooks.md = [];
   XRender.Hooks.html = [];
 
   var MDRender = Plugins.MDRender = function () {
-    this._converter = new Showdown.converter();
+    var converter = new Showdown.converter();
+    to(this)
+      .addGet('converter', function () { return converter; })
+    ;
   };
   MDRender.extension = 'md';
   to(MDRender)
@@ -331,7 +353,7 @@
     });
 
   MDRender.prototype.render = function (text) {
-    return this._converter.makeHTML(text);
+    return this.converter.makeHtml(text);
   };
   XRender.addRender(MDRender);
 
@@ -347,9 +369,11 @@
   };
   XRender.addRender(TXTRender);
 
-  var HTMLRender = Plugins.HTMLRender = function () {
-
+  var NoopRender = Plugins.NoopRender = function () {};
+  NoopRender.prototype.render = function (text) {
+    return text;
   };
+
   var defaultStoryTemplate =
   '<article data-container>\n' +
     '<header><h1 data-title></h1></header>\n' +
