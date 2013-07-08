@@ -65,4 +65,15 @@ describe('The class HTMLEmitter', function () {
     }
   );
 
+  it('can use a render to preprocess body and excerpt',
+    function () {
+      var noopRender = new AutoBlog.Plugins.NoopRender();
+      spyOn(noopRender, 'render');
+      var emitter = new AutoBlog.HTMLEmitter(story, template, noopRender);
+      emitter.toDOM();
+      expect(noopRender.render).toHaveBeenCalledWith(story.body, 'body');
+      expect(noopRender.render).toHaveBeenCalledWith(story.excerpt, 'excerpt');
+    }
+  );
+
 });

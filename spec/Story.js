@@ -2,6 +2,7 @@ describe('The class Story', function () {
   'use strict';
 
   var storyComponents = {
+    storyFileName: 'story.md',
     storyTitle: 'The title',
     storyExcerpt: 'An excerpt...',
     storyBody: '...for a longer text.',
@@ -63,9 +64,10 @@ describe('The class Story', function () {
         'storyDate'
       );
       function parse() {
-        story = new AutoBlog.Story(source);
+        story = new AutoBlog.Story(source, storyComponents.storyFileName);
       }
       expect(parse).not.toThrow();
+      expect(story.fileName).toBe(storyComponents.storyFileName);
       expect(story.title).toBe(storyComponents.storyTitle);
       expect(story.excerpt).toBe(storyComponents.storyExcerpt);
       expect(story.body).toBe(storyComponents.storyBody);

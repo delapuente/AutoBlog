@@ -51,7 +51,7 @@ describe('The class AutoBlog', function () {
 
       waitsFor(function () {
         return finished;
-      }, 'Generation should take less than 1s', 1000);
+      }, 'fillPlaceholder(streamPlaceholder) to finish', 1000);
 
       runs(function () {
         expect(mainStream.childElementCount).toBe(2);

@@ -45,7 +45,7 @@ describe('The class Stream', function () {
 
       waitsFor(function () {
         return index !== undefined;
-      }, 'index should load.', 1000);
+      }, 'loadIndex() to finish.', 1000);
 
       runs(function () {
         expect(index).toEqual(referenceIndex);
@@ -75,7 +75,7 @@ describe('The class Stream', function () {
 
       waitsFor(function () {
         return stories !== undefined;
-      }, 'stories should load.', 1000);
+      }, 'loadStories(referenceIndex.paths) to finish.', 1000);
 
       runs(function () {
         expect(stream.stories).toEqual(referenceStories);
@@ -96,7 +96,7 @@ describe('The class Stream', function () {
 
       waitsFor(function () {
         return stories !== undefined;
-      }, 'stories should load.', 1000);
+      }, 'stream.load() to finish.', 1000);
 
       runs(function () {
         expect(stream.stories).toEqual(referenceStories);

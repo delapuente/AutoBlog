@@ -1,16 +1,12 @@
 describe('The XRender render', function () {
   'use strict';
 
-  var MockRender;
-  beforeEach(function () {
-    MockRender = function () {};
-    MockRender.extension = 'test';
-    MockRender.enabled = true;
-    MockRender.prototype.render = function(text, section) {
-      return section;
-    };
-    spyOn(MockRender.prototype, 'render');
-  });
+  var MockRender = function () {};
+  MockRender.extension = 'test';
+  MockRender.enabled = true;
+  MockRender.prototype.render = function(text, section) {
+    return section;
+  };
 
   it('is a proxy render, ' +
      'It delegates into the real one based on the story extension',
@@ -35,6 +31,15 @@ describe('The XRender render', function () {
 
       XRender.removeRender(MockRender);
       expect(XRender.Hooks.test).toEqual([]);
+    }
+  );
+
+  it('does not allow the developer to add an extension render twice',
+    function () {
+      var XRender = AutoBlog.Plugins.XRender;
+      XRender.addRender(MockRender);
+      XRender.addRender(MockRender);
+      expect(XRender.Hooks.test).toEqual([MockRender]);
     }
   );
 
@@ -77,6 +82,7 @@ describe('The XRender render', function () {
           testSection = 'testSection';
 
       var xRender, XRender = AutoBlog.Plugins.XRender;
+      spyOn(MockRender.prototype, 'render');
       XRender.addRender(MockRender);
       xRender = new XRender(storyPath);
       xRender.render(testText, testSection);
@@ -85,7 +91,7 @@ describe('The XRender render', function () {
     }
   );
 
-  it('has an autodiscover() utility to add available renders to the hooks.',
+  it('has an autodiscoverRenders() utility to add available renders to the hooks.',
     function () {
       window.TestRender1 = function () {};
       window.TestRender1.extension = 'a';
@@ -95,7 +101,7 @@ describe('The XRender render', function () {
       window.TestRender3.extension = 'c';
 
       var XRender = AutoBlog.Plugins.XRender;
-      XRender.autodiscover();
+      XRender.autodiscoverRenders();
 
       expect(XRender.Hooks.a).toEqual([window.TestRender1]);
       expect(XRender.Hooks.b).toEqual([window.TestRender2]);

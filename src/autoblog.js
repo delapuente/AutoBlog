@@ -30,9 +30,23 @@
     });
   }
 
-  var Story = AutoBlog.Story = function (source) {
+  function getStory(url) {
+    return new Promise(function (resolver) {
+      var source = getURL(url).then(
+        function _onSuccess(source) {
+          resolver.fulfill([source, url]);
+        },
+        function _onError(reason) {
+          resolver.reject(reason);
+        }
+      );
+    });
+  }
+
+  var Story = AutoBlog.Story = function (source, fileName) {
     var model = Story.parseSource(source);
     to(this)
+      .addGet('fileName', function () { return fileName; })
       .addGet('title', function () { return model.story.title; })
       .addGet('excerpt', function () { return model.story.excerpt; })
       .addGet('body', function () { return model.story.body; })
@@ -40,6 +54,14 @@
       .addGet('date', function () { return model.meta.date; })
     ;
   };
+
+  Story.getStoryNameFromURL = function (url) {
+    var parser = document.createElement('A');
+    parser.href = url;
+    var path = parser.pathname;
+    var lastSlash = path.lastIndexOf('/');
+    return path.substring(lastSlash + 1);
+  }
 
   Story.parseSource = function (source) {
     var storyAndMeta = source.split(/^-{3,}\n/m),
@@ -58,19 +80,25 @@
   Story.parseStory = function (source) {
     var titleAndBody = source.match(/(.+)(\n(?:.|\s)+)?/m),
         title = titleAndBody[1].trim(),
-        body = titleAndBody[2] || '';
-
+        body = (titleAndBody[2] || '').substring(1);
     var excerptAndBody = body.split(/^\+{3,}\n/m),
-        body = excerptAndBody[excerptAndBody.length === 2 ? 1 : 0].trim() ||
+        body = excerptAndBody[excerptAndBody.length === 2 ? 1 : 0] ||
                undefined;
     var excerpt = excerptAndBody.length === 2 ?
-                  excerptAndBody[0].trim() : undefined;
+                  excerptAndBody[0] : undefined;
+
+    if (body) { body = removeTrailingBreaks(body); }
+    if (excerpt) { excerpt = removeTrailingBreaks(excerpt); }
 
     return {
       title: title,
       excerpt: excerpt,
       body: body
     };
+
+    function removeTrailingBreaks(string) {
+      return string.replace(/(\n)+$/mg, '');
+    }
   };
 
   Story.parseMeta = function (source) {
@@ -94,10 +122,11 @@
     }
   };
 
-  var HTMLEmitter = AutoBlog.HTMLEmitter = function (story, template) {
+  var HTMLEmitter = AutoBlog.HTMLEmitter = function (story, template, render) {
     to(this)
       .addGet('story', function () { return story; })
       .addGet('template', function () { return template; })
+      .addGet('render', function () { return render; })
     ;
   };
 
@@ -130,71 +159,173 @@
   };
 
   HTMLEmitter.prototype.makeContainer = function (root) {
-    var container = root.querySelector('[data-container]');
-    if (container === null) { return; }
-
-    delete container.dataset.container;
-  }
+    this.makeSection(root, 'container');
+  };
 
   HTMLEmitter.prototype.makeTitle = function (root) {
-    var title = root.querySelector('[data-title]');
-    if (title === null) { return; }
-
-    if (this.story.title !== undefined) {
-      title.innerHTML = this.story.title;
-    }
-    delete title.dataset.title;
-  }
+    this.makeSection(root, 'title', this.story.title);
+  };
 
   HTMLEmitter.prototype.makeExcerpt = function (root) {
-    var excerpt = root.querySelector('[data-excerpt]');
-    if (excerpt === null) { return; }
-
-    if (this.story.excerpt !== undefined) {
-      excerpt.innerHTML = this.story.excerpt;
-    }
-    delete excerpt.dataset.excerpt;
-  }
+    this.makeRenderedSection(root, 'excerpt', this.story.excerpt);
+  };
 
   HTMLEmitter.prototype.makeBody = function (root) {
-    var body = root.querySelector('[data-body]');
-    if (body === null) { return; }
-
-    if (this.story.body !== undefined) {
-      body.innerHTML = this.story.body;
-    }
-    delete body.dataset.body;
-  }
+    this.makeRenderedSection(root, 'body', this.story.body);
+  };
 
   HTMLEmitter.prototype.makeAuthor = function (root) {
-    var author = root.querySelector('[data-author]');
-    if (author === null) { return; }
-
-    if (this.story.author !== undefined) {
-      author.innerHTML = this.story.author;
-    }
-    delete author.dataset.author;
-  }
+    this.makeSection(root, 'author', this.story.author);
+  };
 
   HTMLEmitter.prototype.makeDate = function (root) {
-    var date = root.querySelector('[data-date]');
-    if (date === null) { return; }
+    var dateText = this.story.date ? [
+      this.story.date.getFullYear(),
+      this.story.date.getMonth() + 1,
+      this.story.date.getDate()
+    ].join('/') : undefined;
 
-    if (this.story.date !== undefined) {
-      date.innerHTML = [
-        this.story.date.getFullYear(),
-        this.story.date.getMonth() + 1,
-        this.story.date.getDate()
-      ].join('/');
+    this.makeSection(root, 'date', dateText);
+  };
+
+  HTMLEmitter.prototype.makeSection = function (root, section, value) {
+    var sectionElement = root.querySelector('[data-' + section + ']');
+    if (section === null) { return; }
+    if (value !== undefined && this.story[section] !== undefined) {
+      sectionElement.innerHTML = value;
     }
-    delete date.dataset.date;
-  }
+    delete sectionElement.dataset[section];
+  };
+
+  HTMLEmitter.prototype.makeRenderedSection = function (root, section, value) {
+    if (this.render) { value = this.render.render(value, section); }
+    return this.makeSection(root, section, value);
+  };
 
   HTMLEmitter.prototype.toHTML = function () {
     var dom = this.toDOM();
     var tmp = document.createElement('DIV');
     tmp.appendChild(dom);
     return tmp.innerHTML;
+  };
+
+  var Plugins = AutoBlog.Plugins = Object.create(null);
+
+  var XRender = Plugins.XRender = function (storyPath) {
+    var extension, renderInstance, renderClass,
+        lastPoint = storyPath.lastIndexOf('.');
+    extension = storyPath.substring(lastPoint + 1);
+    renderClass = XRender._selectRender(extension) || NoopRender;
+    renderInstance = new renderClass(storyPath);
+    to(this)
+      .addGet('extension', function () { return extension; })
+      .addGet('renderInstance', function () { return renderInstance; })
+    ;
+  }
+
+  XRender._selectRender = function (extension) {
+    var render, hooks = XRender.Hooks;
+    if (extension in hooks && Array.isArray(hooks[extension])) {
+      var i = 0, renders = hooks[extension];
+      while (render = renders[i++]) {
+        if (render.enabled) {
+          return render;
+        }
+      }
+    }
+    console.error('No render installed for .' + extension);
+    return render;
+  }
+
+  XRender.addRender = function (render) {
+    var extension = render.extension;
+    if (!XRender._renderClasssDefinedFor(extension)) {
+      XRender.Hooks[extension] = [];
+    }
+    if (XRender.Hooks[extension].indexOf(render) === -1) {
+      XRender.Hooks[extension].push(render);
+    }
+  };
+
+  XRender.removeRender = function (render) {
+    var renderPosition, extension = render.extension;
+    if (XRender._renderClasssDefinedFor(extension)) {
+      var renders = XRender.Hooks[extension];
+      renderPosition = renders.lastIndexOf(render);
+      while (renderPosition > -1) {
+        renders.splice(renderPosition, 1);
+        renderPosition = renders.lastIndexOf(render);
+      }
+    }
+  };
+
+  XRender._renderClasssDefinedFor = function (extension) {
+    return (extension in XRender.Hooks) &&
+           Array.isArray(XRender.Hooks[extension]);
+  };
+
+  XRender.autodiscoverRenders = function () {
+    for (var globalName in window) {
+      var renderCandidate = window[globalName];
+      if (isRender(renderCandidate)) {
+        XRender.addRender(renderCandidate)
+      }
+    }
+
+    function isRender(renderCandidate) {
+      return (typeof renderCandidate === 'function') &&
+             ('extension' in renderCandidate);
+    }
+  };
+
+  XRender.prototype.getRenderClass = function () {
+    return this.renderInstance.constructor;
+  };
+
+  XRender.prototype.render = function (text, section) {
+    return this.renderInstance.render(text, section);
+  };
+
+  XRender.Hooks = Object.create(null);
+
+  var MDRender = Plugins.MDRender = function () {
+    var converter = new window.Showdown.converter();
+    to(this)
+      .addGet('converter', function () { return converter; })
+    ;
+  };
+
+  MDRender.extension = 'md';
+
+  to(MDRender)
+    .addGet('enabled', function () {
+      return window.Showdown && window.Showdown.converter;
+    })
+  ;
+
+  MDRender.prototype.render = function (text) {
+    return this.converter.makeHtml(text);
+  };
+  XRender.addRender(MDRender);
+
+  var TXTRender = Plugins.TXTRender = function () {
+    this._helperToEscape = document.createElement('DIV');
+  };
+
+  TXTRender.extension = 'txt';
+  TXTRender.enabled = true;
+
+  TXTRender.prototype.render = function (text) {
+    this._helperToEscape.textContent = text;
+    return this._helperToEscape.innerHTML;
+  };
+
+  XRender.addRender(TXTRender);
+
+  var NoopRender = Plugins.NoopRender = function () {};
+
+  NoopRender.prototype.render = function (text) {
+    return text;
   };
 
   var Stream = AutoBlog.Stream = function (path) {
@@ -238,15 +369,18 @@
   Stream.prototype.loadStories = function (storyPaths) {
     var self = this;
     var promises = storyPaths.map(function (url) {
-      return getURL(url + '#' + Date.now());
+      return getStory(url + '?uid=' + Date.now());
     });
     return Promise.every.apply(this, promises)
       .then(parseStories)
       .then(storeStories);
 
     function parseStories(storySources) {
-      var stories = storySources.map(function (source) {
-        return new Story(source);
+      var stories = storySources.map(function (sourceAndURL) {
+        return new Story(
+          sourceAndURL[0],
+          Story.getStoryNameFromURL(sourceAndURL[1])
+        );
       });
       return stories;
     }
@@ -277,112 +411,6 @@
     return stories;
   };
 
-  var Plugins = AutoBlog.Plugins = Object.create(null);
-  var XRender = Plugins.XRender = function (storyPath) {
-    var extension, renderInstance, renderClass,
-        lastPoint = storyPath.lastIndexOf('.');
-    extension = storyPath.substring(lastPoint+1);
-    renderClass = XRender._selectRender(extension) || NoopRender;
-    renderInstance = new renderClass(storyPath);
-    to(this)
-      .addGet('extension', function () { return extension; })
-      .addGet('renderInstance', function () { return renderInstance; })
-    ;
-  }
-
-  XRender._selectRender = function (extension) {
-    var render, hooks = XRender.Hooks;
-    if (extension in hooks && Array.isArray(hooks[extension])) {
-      var i = 0, renders = hooks[extension];
-      while (render = renders[i++]) {
-        if (render.enabled) {
-          return render;
-        }
-      }
-    }
-    return render;
-  }
-  XRender.addRender = function (render) {
-    var extension = render.extension;
-    if (!XRender._renderClasssDefinedFor(extension)) {
-      XRender.Hooks[extension] = [];
-    }
-    XRender.Hooks[extension].push(render);
-  };
-  XRender.removeRender = function (render) {
-    var renderPosition, extension = render.extension;
-    if (XRender._renderClasssDefinedFor(extension)) {
-      var renders = XRender.Hooks[extension];
-      renderPosition = renders.lastIndexOf(render);
-      while (renderPosition > -1) {
-        renders.splice(renderPosition, 1);
-        renderPosition = renders.lastIndexOf(render);
-      }
-    }
-  };
-  XRender._renderClasssDefinedFor = function (extension) {
-    return (extension in XRender.Hooks) &&
-           Array.isArray(XRender.Hooks[extension]);
-  };
-  XRender.autodiscover = function () {
-    for (var globalName in window) {
-      var renderCandidate = window[globalName];
-      if (isRender(renderCandidate)) {
-        XRender.addRender(renderCandidate)
-      }
-    }
-
-    function isRender(renderCandidate) {
-      return (typeof renderCandidate === 'function') &&
-             ('extension' in renderCandidate);
-    }
-  };
-
-  XRender.prototype.getRenderClass = function () {
-    return this.renderInstance.constructor;
-  };
-  XRender.prototype.render = function (text, section) {
-    return this.renderInstance.render(text, section);
-  };
-
-  XRender.Hooks = Object.create(null);
-  XRender.Hooks.md = [];
-  XRender.Hooks.html = [];
-
-  var MDRender = Plugins.MDRender = function () {
-    var converter = new Showdown.converter();
-    to(this)
-      .addGet('converter', function () { return converter; })
-    ;
-  };
-  MDRender.extension = 'md';
-  to(MDRender)
-    .addGet('enabled', function () {
-      return Showdown && Showdown.converter;
-    });
-
-  MDRender.prototype.render = function (text) {
-    return this.converter.makeHtml(text);
-  };
-  XRender.addRender(MDRender);
-
-  var TXTRender = Plugins.TXTRender = function () {
-    this._helperToEscape = document.createElement('DIV');
-  };
-  TXTRender.extension = 'txt';
-  TXTRender.enabled = true;
-
-  TXTRender.prototype.render = function (text) {
-    this._helperToEscape.textContent = text;
-    return this._helperToEscape.innerHTML;
-  };
-  XRender.addRender(TXTRender);
-
-  var NoopRender = Plugins.NoopRender = function () {};
-  NoopRender.prototype.render = function (text) {
-    return text;
-  };
-
   var defaultStoryTemplate =
   '<article data-container>\n' +
     '<header><h1 data-title></h1></header>\n' +
@@ -394,24 +422,24 @@
     '</aside>\n' +
   '</article>';
 
-  var AutoBlog = AutoBlog.AutoBlog = function (root) {
+  var _AutoBlog = AutoBlog.AutoBlog = function (root) {
     to(this)
       .addGet('root', function () { return root; })
       .addGet('storyTemplate', function () { return defaultStoryTemplate; })
     ;
   };
 
-  AutoBlog.getDefaultStream = function () {
+  _AutoBlog.getDefaultStream = function () {
     return 'stories';
   };
 
-  AutoBlog.prototype.getStreamPlaceholders = function () {
+  _AutoBlog.prototype.getStreamPlaceholders = function () {
     var placeholderElements = this.root.querySelectorAll('[data-stream]'),
         placeholder, streamName;
     this.placeholders = [];
     for (var i = 0, l = placeholderElements.length; i < l; i++) {
       placeholder = placeholderElements[i];
-      streamName = placeholder.dataset.stream || AutoBlog.getDefaultStream();
+      streamName = placeholder.dataset.stream || _AutoBlog.getDefaultStream();
       this.placeholders.push({
         placeholder: placeholder,
         stream: new Stream(streamName)
@@ -420,7 +448,7 @@
     return this.placeholders;
   };
 
-  AutoBlog.prototype.fillPlaceholders = function (placeholders) {
+  _AutoBlog.prototype.fillPlaceholders = function (placeholders) {
     placeholders = placeholders || this.placeholders;
     var self = this;
     var promises = [];
@@ -430,19 +458,21 @@
     return Promise.every.apply(this, promises);
   };
 
-  AutoBlog.prototype.fillPlaceholder = function (placeholder) {
+  _AutoBlog.prototype.fillPlaceholder = function (placeholder) {
     var self = this,
         stream = placeholder.stream;
     return stream.load().then(renderStories);
 
     function renderStories(stories) {
       var emitter,
+          render,
           htmlBuffer = '',
           storyTemplate = self.storyTemplate,
           root = placeholder.placeholder;
 
       stories.forEach(function (story) {
-        emitter = new HTMLEmitter(story, storyTemplate);
+        render = new XRender(story.fileName); // TODO: Make this configurable
+        emitter = new HTMLEmitter(story, storyTemplate, render);
         htmlBuffer += emitter.toHTML();
         htmlBuffer += '\n';
       });
@@ -452,10 +482,11 @@
   }
 
   function discoverBlog() {
-    var autoblog = global.autoblog = new AutoBlog(document.body);
+    var autoblog = global.autoblog = new _AutoBlog(document.body);
     autoblog.getStreamPlaceholders();
     autoblog.fillPlaceholders();
   }
 
+  XRender.autodiscoverRenders();
   document.addEventListener('DOMContentLoaded', discoverBlog);
 }(this));
