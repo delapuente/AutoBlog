@@ -37,7 +37,7 @@ by Here the author
 on 2013-07-08
 ```
 
-Save your stories inside the `stories` folder some name such as
+Save your stories inside the `stories` folder with some name such as
 `my-first-story.html`. Then edit the `index` file and add the name as a line
 to indicate you want to publish the story:
 
@@ -46,8 +46,8 @@ my-first-story.html
 ```
 
 As you write new stories, add them to the top of `index` to publish them. Only
-stories inside index are published and they are in the same order than they
-appear in `index`:
+stories inside `index` are published and they are in the same order than they
+appear inside `index`:
 
 ```
 my-third-story-is-sticky.html
@@ -64,7 +64,7 @@ generate the blog. To do it, add the following scripts to your `index.html`:
 <script src="src/autoblog.js"></script>
 ```
 
-Supposing you have cloned or download a zipped version of the repository.
+(Supposing you have cloned or download a zipped version of the repository).
 
 Finally add the `data-stream` attribute to the HTML element you want to contain
 the stories.
@@ -101,6 +101,20 @@ by using their scaped versions:
 and
 \\---
 ```
+
+#### Can I name my folder with other name rather than `stories`?
+Yes, you can but then use the attribute `data-stream="yourFolderName"` instead
+of the `data-stream` only version.
+
+#### Can I have several streams instead of only one?
+Of course, only add the `data-stream` attribute to the proper containers. For
+instance:
+
+```
+<section data-stream></section>
+<section data-stream="haikus"></section>
+```
+
 ---
 by Salva
 on 2013-6-23
