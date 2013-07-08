@@ -3,9 +3,9 @@ describe('The class Stream', function () {
 
   var origin = window.location.origin,
       storiesPath = 'spec/stories',
-      referenceIndexSource = '["story1","story2"]',
+      referenceIndexSource = 'story1\nstory2',
       referenceIndex = {
-        paths: JSON.parse(referenceIndexSource).map(function (storyName) {
+        paths: ["story1", "story2"].map(function (storyName) {
           return storiesPath + '/' + storyName;
         })
       },
@@ -32,7 +32,7 @@ describe('The class Stream', function () {
     }
   );
 
-  it('uses a file called index.json to know which stories are in the stream',
+  it('uses a file called index to know which stories are in the stream',
     function () {
       var index;
 
@@ -45,7 +45,7 @@ describe('The class Stream', function () {
 
       waitsFor(function () {
         return index !== undefined;
-      }, 'index.json should load.', 1000);
+      }, 'index should load.', 1000);
 
       runs(function () {
         expect(index).toEqual(referenceIndex);

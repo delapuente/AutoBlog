@@ -219,8 +219,7 @@
 
   Stream.prototype.loadIndex = function () {
     var self = this;
-    var indexPath = this.path + '/index.json?uid=' + Date.now();
-    console.log(indexPath);
+    var indexPath = this.path + '/index?uid=' + Date.now();
     return getURL(indexPath).then(parseIndex).then(storeIndex);
 
     function parseIndex(indexSource) {
@@ -258,7 +257,7 @@
   };
 
   var Index = AutoBlog.Index = function (stream, indexSource) {
-    var rawIndex = JSON.parse(indexSource);
+    var rawIndex = Index.parseSource(indexSource);
     var paths = rawIndex.map(function (storyName) {
       return stream.path + '/' + storyName;
     });
@@ -266,6 +265,16 @@
       .addGet('stream', function () { return stream; })
       .addGet('paths', function () { return paths; })
     ;
+  };
+  Index.parseSource = function (indexSource) {
+    var stories = indexSource.split('\n');
+    stories = stories.map(function (item) {
+      return item.trim();
+    });
+    stories = stories.filter(function (item) {
+      return item !== '';
+    })
+    return stories;
   };
 
   var Plugins = AutoBlog.Plugins = Object.create(null);
