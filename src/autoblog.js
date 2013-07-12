@@ -238,13 +238,8 @@
 
   XRender._selectRender = function (extension) {
     var render, hooks = XRender.Hooks;
-    if (extension in hooks && Array.isArray(hooks[extension])) {
-      var i = 0, renders = hooks[extension];
-      while (render = renders[i++]) {
-        if (render.enabled) {
-          return render;
-        }
-      }
+    if (extension in hooks && hooks[extension]) {
+      return hooks[extension];
     }
     console.error('No render installed for .' + extension);
     return render;
@@ -252,29 +247,12 @@
 
   XRender.addRender = function (render) {
     var extension = render.extension;
-    if (!XRender._renderClasssDefinedFor(extension)) {
-      XRender.Hooks[extension] = [];
-    }
-    if (XRender.Hooks[extension].indexOf(render) === -1) {
-      XRender.Hooks[extension].push(render);
-    }
+    XRender.Hooks[extension] = render;
   };
 
   XRender.removeRender = function (render) {
-    var renderPosition, extension = render.extension;
-    if (XRender._renderClasssDefinedFor(extension)) {
-      var renders = XRender.Hooks[extension];
-      renderPosition = renders.lastIndexOf(render);
-      while (renderPosition > -1) {
-        renders.splice(renderPosition, 1);
-        renderPosition = renders.lastIndexOf(render);
-      }
-    }
-  };
-
-  XRender._renderClasssDefinedFor = function (extension) {
-    return (extension in XRender.Hooks) &&
-           Array.isArray(XRender.Hooks[extension]);
+    var extension = render.extension;
+    delete XRender.Hooks[extension];
   };
 
   XRender.autodiscoverRenders = function () {

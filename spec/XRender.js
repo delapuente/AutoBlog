@@ -27,27 +27,33 @@ describe('The XRender render', function () {
       expect(XRender.Hooks.test).toBeUndefined();
 
       XRender.addRender(MockRender);
-      expect(XRender.Hooks.test).toEqual([MockRender]);
+      expect(XRender.Hooks.test).toBe(MockRender);
 
       XRender.removeRender(MockRender);
-      expect(XRender.Hooks.test).toEqual([]);
+      expect(XRender.Hooks.test).toBeUndefined();
     }
   );
 
-  it('does not allow the developer to add an extension render twice',
+  it('allows one render by extension. ' +
+     'Further additions overrides previous ones.',
     function () {
+      function AnotherMockRender() {};
+      AnotherMockRender.extension = MockRender.extension;
+      AnotherMockRender.enabled = true;
+
       var XRender = AutoBlog.Plugins.XRender;
       XRender.addRender(MockRender);
-      XRender.addRender(MockRender);
-      expect(XRender.Hooks.test).toEqual([MockRender]);
+      expect(XRender.Hooks.test).toBe(MockRender);
+      XRender.addRender(AnotherMockRender);
+      expect(XRender.Hooks.test).toBe(AnotherMockRender);
     }
   );
 
   it('provides two default hooks for Markdown and Text.',
     function () {
       var hooks = AutoBlog.Plugins.XRender.Hooks;
-      expect(Array.isArray(hooks.md)).toBeTruthy();
-      expect(Array.isArray(hooks.txt)).toBeTruthy();
+      expect(hooks.md).toBeDefined();
+      expect(hooks.txt).toBeDefined();
     }
   );
 
@@ -103,26 +109,14 @@ describe('The XRender render', function () {
       var XRender = AutoBlog.Plugins.XRender;
       XRender.autodiscoverRenders();
 
-      expect(XRender.Hooks.a).toEqual([window.TestRender1]);
-      expect(XRender.Hooks.b).toEqual([window.TestRender2]);
-      expect(XRender.Hooks.c).toEqual([window.TestRender3]);
+      expect(XRender.Hooks.a).toEqual(window.TestRender1);
+      expect(XRender.Hooks.b).toEqual(window.TestRender2);
+      expect(XRender.Hooks.c).toEqual(window.TestRender3);
 
       delete window.TestRender1;
       delete window.TestRender2;
       delete window.TestRender3;
     }
   );
-
-  describe('A hook', function () {
-    it('-if defined- is an (empty) array of renders for each extension',
-      function () {
-        var renders, hooks = AutoBlog.Plugins.XRender.Hooks;
-        for (var extension in hooks) {
-          renders = hooks[extension];
-          expect(Array.isArray(renders)).toBeTruthy();
-        }
-      }
-    );
-  })
 
 });
