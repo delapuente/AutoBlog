@@ -109,52 +109,45 @@ describe('The class Story', function () {
     }
   );
 
-  it('supports sequences +++ and --- in the body by using \\+++ and \\---',
-    function () {
-      var source =
-      'Title\n' +
-      'A body using\n' +
-      '\\+++\n' +
-      'and\n' +
-      '\\---\n' +
-      'as part of the body';
-      var expectedBody =
-      'A body using\n' +
-      '+++\n' +
-      'and\n' +
-      '---\n' +
-      'as part of the body';
-      var story;
-      function parse() {
-        story = new AutoBlog.Story(source);
-      }
-      expect(parse).not.toThrow();
-      expect(story.body).toBe(expectedBody);
-    }
-  );
+  describe('The utility class MicroformatPreprocessor', function () {
+    var rtrim = AutoBlog.Story.MicroformatPreprocessor.removeTrailingBreaks;
+    var escape = AutoBlog.Story.MicroformatPreprocessor.replaceScapedSequences;
 
-  it('supports double scaping to allow writing \\+++ and \\---',
-    function () {
-      var source =
-      'Title\n' +
-      'A body using\n' +
-      '\\\\+++\n' +
-      'and\n' +
-      '\\\\---\n' +
-      'as part of the body';
-      var expectedBody =
-      'A body using\n' +
-      '\\+++\n' +
-      'and\n' +
-      '\\---\n' +
-      'as part of the body';
-      var story;
-      function parse() {
-        story = new AutoBlog.Story(source);
-      }
-      expect(parse).not.toThrow();
-      expect(story.body).toBe(expectedBody);
-    }
-  );
+    it('removes trailing breaklines', function () {
+      expect(rtrim('foo\n\nbar\n\n')).toBe('foo\n\nbar');
+    });
 
+    it('support escaped sequences for +++ and ---', function () {
+      expect(escape('\\+++\n')).toBe('+++\n');
+      expect(escape('\\---\n')).toBe('---\n');
+    });
+
+    it('support escaped sequences for \\+++ and \\---', function () {
+      expect(escape('\\\\+++\n')).toBe('\\+++\n');
+      expect(escape('\\\\---\n')).toBe('\\---\n');
+    });
+
+    it('does not escape when there is no trailing breakline', function () {
+      expect(escape('\\+++')).toBe('\\+++');
+      expect(escape('\\---')).toBe('\\---');
+    });
+
+    it('does not escape when sequences are not at the beginning of the line',
+    function () {
+      expect(escape('foo \\+++\n')).toBe('foo \\+++\n');
+      expect(escape('foo \\---\n')).toBe('foo \\---\n');
+    });
+
+    it('does not escape when sequences are not exactly the same as used in ' +
+       'the microformat',
+    function () {
+      expect(escape('\\++++\n')).toBe('\\++++\n');
+      expect(escape('\\----\n')).toBe('\\----\n');
+    });
+
+    it('does not escape slashes not preceeding +++ or ---',
+    function () {
+      expect(escape('\\noob\n')).toBe('\\noob\n');
+    });
+  });
 });

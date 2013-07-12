@@ -87,14 +87,8 @@
     var excerpt = excerptAndBody.length === 2 ?
                   excerptAndBody[0] : undefined;
 
-    if (body) {
-      body = removeTrailingBreaks(body);
-      body = replaceScapedSequences(body);
-    }
-    if (excerpt) {
-      excerpt = removeTrailingBreaks(excerpt);
-      excerpt = replaceScapedSequences(excerpt);
-    }
+    body = preprocessText(body);
+    excerpt = preprocessText(excerpt);
 
     return {
       title: title,
@@ -102,16 +96,39 @@
       body: body
     };
 
-    function removeTrailingBreaks(string) {
-      return string.replace(/(\n)+$/g, '');
+    function preprocessText(string) {
+      var preprocessor = new Story.MicroformatPreprocessor(string);
+      return preprocessor.getResult();
     }
+  };
 
-    function replaceScapedSequences(string) {
-      string = string.replace(/^\\\+\+\+/mg, '+++');
-      string = string.replace(/^\\---/mg, '---');
-      string = string.replace(/^\\\\/mg, '\\');
-      return string;
+  Story.MicroformatPreprocessor =
+  function(inputString) {
+    to(this)
+      .addGet('inputString', function () { return inputString; })
+    ;
+  };
+
+  Story.MicroformatPreprocessor.removeTrailingBreaks =
+  function(string) {
+    return string.replace(/(\n)+$/g, '');
+  };
+
+  Story.MicroformatPreprocessor.replaceScapedSequences =
+  function(string) {
+    string = string.replace(/^(\\+)([\+-]{3})\n/mg, function(all) {
+      return all.substring(1);
+    });
+    return string;
+  };
+
+  Story.MicroformatPreprocessor.prototype.getResult = function () {
+    var result = this.inputString;
+    if (result) {
+      result = Story.MicroformatPreprocessor.removeTrailingBreaks(result);
+      result = Story.MicroformatPreprocessor.replaceScapedSequences(result);
     }
+    return result;
   };
 
   Story.parseMeta = function (source) {
