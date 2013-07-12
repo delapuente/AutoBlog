@@ -5,33 +5,36 @@ html, header, body, p, td, th, h1, li {
 }
 
 html {
-  font-size: 100%;
+  font-size: 80%;
 }
 
 body {
-  background-color: #F7F7F7;
+  background: #ffa84c;
+  background: linear-gradient(to top,  #ffa84c 0%, #ff7b0d 100%);
+}
+
+p {
+  text-align: justify;
 }
 
 p, li, pre {
   margin: 0.2rem 0 0.7rem 0;
-  font-size: 1rem;
-  text-shadow: 0 0.1rem 0 #FFF;
-  text-align: justify;
-  color: #666;
-  font-weight: bold;
-  line-height: 1.5rem;
+  font-size: 1.2rem;
+  color: #333;
+  line-height: 1.9rem;
 }
 
 code {
   border: 0.1rem #BBB dashed;
   background-color: white;
-  padding: 0.1rem;
+  padding: 0.1rem 0.3rem;
+  border-radius: 0.3rem;
 }
 
 pre code {
   border: none;
-  background-color: transparent;
   padding: none;
+  background-color: transparent;
 }
 
 pre {
@@ -48,15 +51,13 @@ strong {
 .title {
   width: 100%;
   height: 10rem;
-  background: #ffa84c;
-  background: linear-gradient(to bottom,  #ffa84c 0%, #ff7b0d 100%);
   color: white;
+  text-align: center;
 }
 
 .title h1 {
   line-height: 9rem;
-  margin-left: 3rem;
-  font-size: 4rem;
+  font-size: 6rem;
   text-shadow: 0 0.1rem 0 #ccc,
                0 0.2rem 0 #c9c9c9,
                0 0.3rem 0 #bbb,
@@ -72,14 +73,19 @@ strong {
 }
 
 .stories {
-  margin: 2rem;
-  max-width: 800px;
+  margin: 2rem auto;
+  max-width: 650px;
 }
 
 .stories article {
-  padding: 1rem;
+  padding: 2rem;
+  padding-bottom: 5.7rem;
   position: relative;
   clear: both;
+  background-color: #FAFAFA;
+  border-radius: 0 1rem 1rem 1rem;
+  box-shadow: 0 0.4rem 1rem rgba(255, 255, 128, 0.5);
+  margin: 2rem;
 }
 
 .stories article h1 {
@@ -91,20 +97,19 @@ strong {
 }
 
 .stories article aside {
-  background-color: white;
+  border-radius: 0 1rem 1rem 1rem;
+  background-color: #FF7B0D;
   display: inline-block;
   height: 3rem;
   font-weight: bold;
   padding: 1rem;
   text-align: center;
   position: relative;
-  border: 0.2rem solid #FF7B0D;
   float: right;
-  box-shadow: 0.15rem 0.3rem 0.1rem #777;
 }
 
 .stories article aside p {
-  font-style: italic;
+  color: white;
   font-size: 1.2rem;
   line-height: 1rem;
 }
@@ -114,6 +119,7 @@ strong {
   bottom: 0rem;
   left: 0; right: 0;
   padding: 0.5rem 0 0.3rem 0;
-  background-color: #FF7B0D;
-  color: white;
+  background-color: white;
+  border-radius: 0 1rem 1rem 1rem;
+  color: #FF7B0D;
 }
