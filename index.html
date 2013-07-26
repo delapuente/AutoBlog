@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   <title>AutoBlog Alpha</title>
+  <link href='http://fonts.googleapis.com/css?family=Bad+Script' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" type="text/css" href="style.css">
   <script src="lib/polyfills/Promise.js"></script>
   <script src="lib/showdown.js"></script>
@@ -13,6 +14,14 @@
   <header class="title">
     <h1>AutoBlog</h1>
   </header>
+  <section class="haikus">
+    <h1>Haikus</h1>
+    <div data-stream="haikus">
+      <article data-template>
+        <pre data-body></pre>
+      </article>
+    </div>
+  </section>
   <section class="stories" data-stream>
   </section>
 </body>

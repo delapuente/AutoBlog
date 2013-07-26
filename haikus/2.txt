@@ -1,0 +1,4 @@
+Error message
+Your file was so big.
+It might be very useful.
+But now it is gone.

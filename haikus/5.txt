@@ -1,0 +1,4 @@
+C
+if (interested)
+   printf("A little haiku");
+else goto next_post;

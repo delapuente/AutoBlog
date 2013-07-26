@@ -48,6 +48,10 @@ strong {
   color: #111;
 }
 
+[data-template] {
+  visibility: hidden;
+}
+
 .title {
   width: 100%;
   height: 10rem;
@@ -80,8 +84,6 @@ strong {
 .stories article {
   padding: 2rem;
   padding-bottom: 5.7rem;
-  position: relative;
-  clear: both;
   background-color: #FAFAFA;
   border-radius: 0 1rem 1rem 1rem;
   box-shadow: 0 0.4rem 1rem rgba(255, 255, 128, 0.5);
@@ -122,4 +124,29 @@ strong {
   background-color: white;
   border-radius: 0 1rem 1rem 1rem;
   color: #FF7B0D;
+}
+
+.haikus {
+  float: right;
+  margin: 2rem;
+  margin-right: 0;
+}
+
+.haikus h1,
+.haikus pre {
+  font-family: 'Bad Script', cursive;
+}
+
+.haikus h1 {
+  font-size: 4rem;
+  text-align: center;
+}
+
+.haikus pre {
+  line-height: 3rem;
+  border: none;
+  padding: 1rem;
+  box-shadow: -0.1rem 0.1rem 0.3rem 0.1rem rgba(255, 255, 128, 0.5);
+  border-radius: 0.5rem 0 0 0.5rem;
+  font-size: 2rem;
 }
