@@ -1,6 +1,6 @@
 Introducing AutoBlog
 AutoBlog is a little JavaScript utility to build static blogs with minimum
-server support.
+server support. **Show the source of this page to see it in action!**
 +++
 With AutoBlog you maintain folders called streams in the server and write
 your stories in plain text inside a stream. Each stream must have an
@@ -15,13 +15,13 @@ soon.
 
 The minimal setup includes only three steps:
 
-### Folders
+### 1. Set-up folders
 In your static server, create a folder called `stories`. Inside, create a file
 named `index`. Start to write your stories and save them inside this folder.
 The name is unimportant but add the `.html` extension if you want to use HTML in
 the body.
 
-### Stories
+### 2. Write stories
 A story has the following format:
 
 ```
@@ -55,7 +55,7 @@ my-first-story.html
 my-second-story.html
 ```
 
-### Inside index.html
+### 3. Code your blog
 Now you have the proper folder structure and some stories, it's time to
 generate the blog. To do it, add the following scripts to your `index.html`:
 
@@ -114,6 +114,37 @@ instance:
 <section data-stream></section>
 <section data-stream="haikus"></section>
 ```
+
+#### Can I customize the story template?
+Yes. Inside your `stream` element, add another element with the attribute
+`data-template` and it becomes your story template. Inside the template element
+use the following _placeholder attributes_ on child elements to show the
+proper content:
+
+ * `data-title`: to show the title
+ * `data-excerpt`: to show the excerpt
+ * `data-body`: to show the body
+ * `data-author`: to show the author
+ * `data-date`: to show the date
+
+Some things worthing to remember:
+
+ * Any content can be omitted
+ * The _placeholder attributes_ are removed so avoid using them in CSS or JS
+ * The template is not removed but you can use a piece of CSS to hide it:<br/>
+ ```
+ [data-template] {
+   visibility: hidden;
+ }
+ ```
+ * If you want support excerpt and body and you want to hide excerpt when it
+ is empty mark the element for the excerpt with a class and use CSS pseudo-class
+ `:empty`:<br/>
+ ```
+ .excerpt:empty {
+   visibility: hidden;
+ }
+ ```
 
 ---
 by Salva
