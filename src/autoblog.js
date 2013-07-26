@@ -153,11 +153,24 @@
   };
 
   var HTMLEmitter = AutoBlog.HTMLEmitter = function (story, template, render) {
+    template = HTMLEmitter.normalizeTemplate(template);
     to(this)
       .addGet('story', function () { return story; })
       .addGet('template', function () { return template; })
       .addGet('render', function () { return render; })
     ;
+  };
+
+  HTMLEmitter.normalizeTemplate = function (template) {
+    return typeof template !== 'string' ?
+           HTMLEmitter.getStringFromElement(template) :
+           template;
+  };
+
+  HTMLEmitter.getStringFromElement = function (element) {
+    var wrapper = document.createElement('DIV');
+    wrapper.appendChild(element);
+    return wrapper.innerHTML;
   };
 
   HTMLEmitter.getFragmentFromString = function (source) {
@@ -172,6 +185,7 @@
     }
     return fragment;
   };
+
 
   HTMLEmitter.prototype.toDOM = function () {
     var wrapped = true,
@@ -189,7 +203,13 @@
   };
 
   HTMLEmitter.prototype.makeContainer = function (root) {
-    this.makeSection(root, 'container');
+    var container = root.querySelector('[data-stream]') ||
+                    root.querySelector('[data-template]');
+
+    if (container === null) { return; }
+
+    delete container.dataset.section;
+    delete container.dataset.template;
   };
 
   HTMLEmitter.prototype.makeTitle = function (root) {
@@ -220,7 +240,7 @@
 
   HTMLEmitter.prototype.makeSection = function (root, section, value) {
     var sectionElement = root.querySelector('[data-' + section + ']');
-    if (section === null) { return; }
+    if (sectionElement === null) { return; }
     if (value !== undefined && this.story[section] !== undefined) {
       sectionElement.innerHTML = value;
     }
@@ -228,7 +248,10 @@
   };
 
   HTMLEmitter.prototype.makeRenderedSection = function (root, section, value) {
-    if (this.render) { value = this.render.render(value, section); }
+    try {
+      if (this.render) { value = this.render.render(value, section); }
+    }
+    catch (e) { value = undefined; }
     return this.makeSection(root, section, value);
   };
 
@@ -337,7 +360,7 @@
   };
 
   var Stream = AutoBlog.Stream = function (path) {
-    this.stories = [];
+    this.stories = null;
     this.index = null;
     to(this)
       .addGet('path', function () { return path; })
@@ -346,28 +369,17 @@
 
   Stream.prototype.load = function () {
     var self = this;
-    if (this.index === null) {
-      return this.loadIndex().then(loadStories);
-    }
-    return loadStories();
-
-    function loadStories() {
-      return self.loadStories(self.index.paths);
-    }
+    return this.loadIndex().then(function (index) {
+      return self.loadStories(index.paths);
+    });
   };
 
   Stream.prototype.loadIndex = function () {
-    var self = this;
     var indexPath = this.path + '/index?uid=' + Date.now();
-    return getURL(indexPath).then(parseIndex).then(storeIndex);
-
-    function parseIndex(indexSource) {
-      return self.parseIndex(indexSource);
+    if (this.index === null) {
+      this.index = getURL(indexPath).then(this.parseIndex.bind(this));
     }
-
-    function storeIndex(index) {
-      return self.index = index;
-    }
+    return this.index;
   };
 
   Stream.prototype.parseIndex = function (indexSource) {
@@ -379,7 +391,7 @@
     var promises = storyPaths.map(function (url) {
       return getStory(url + '?uid=' + Date.now());
     });
-    return Promise.every.apply(this, promises)
+    return Promise.every.apply(Promise, promises)
       .then(parseStories)
       .then(storeStories);
 
@@ -430,7 +442,7 @@
     '</aside>\n' +
   '</article>';
 
-  var _AutoBlog = AutoBlog.AutoBlog = function (root) {
+  var _AutoBlog = AutoBlog.AutoBlog = function (root, config) {
     to(this)
       .addGet('root', function () { return root; })
       .addGet('storyTemplate', function () { return defaultStoryTemplate; })
@@ -443,14 +455,17 @@
 
   _AutoBlog.prototype.getStreamPlaceholders = function () {
     var placeholderElements = this.root.querySelectorAll('[data-stream]'),
-        placeholder, streamName;
+        placeholder, streamName, customTemplate;
     this.placeholders = [];
     for (var i = 0, l = placeholderElements.length; i < l; i++) {
       placeholder = placeholderElements[i];
       streamName = placeholder.dataset.stream || _AutoBlog.getDefaultStream();
+      customTemplate = placeholder.querySelector('[data-template]');
       this.placeholders.push({
+        streamName: streamName,
         placeholder: placeholder,
-        stream: new Stream(streamName)
+        stream: new Stream(streamName),
+        template: customTemplate || undefined
       });
     }
     return this.placeholders;
@@ -463,7 +478,7 @@
     placeholders.forEach(function (placeholder) {
       promises.push(self.fillPlaceholder(placeholder));
     });
-    return Promise.every.apply(this, promises);
+    return Promise.every.apply(Promise, promises);
   };
 
   _AutoBlog.prototype.fillPlaceholder = function (placeholder) {
@@ -475,7 +490,7 @@
       var emitter,
           render,
           htmlBuffer = '',
-          storyTemplate = self.storyTemplate,
+          storyTemplate = placeholder.template || self.storyTemplate,
           root = placeholder.placeholder;
 
       stories.forEach(function (story) {

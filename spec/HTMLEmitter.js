@@ -9,6 +9,13 @@ describe('The class HTMLEmitter', function () {
     date: new Date(2013, 0, 1)
   };
 
+  var storyWithoutExcerpt = {
+    title: 'The title',
+    body: 'An extended text.',
+    author: 'Salva',
+    date: new Date(2013, 0, 1)
+  };
+
   var template =
   '<div data-container>\n'+
     '<h1 data-title></h1>\n' +
@@ -25,6 +32,19 @@ describe('The class HTMLEmitter', function () {
     expect(container.children.item(0).textContent).toBe(story.title);
     expect(container.children.item(1).tagName).toBe('DIV');
     expect(container.children.item(1).textContent).toBe(story.excerpt);
+    expect(container.children.item(2).tagName).toBe('DIV');
+    expect(container.children.item(2).textContent).toBe(story.body);
+    expect(container.children.item(3).tagName).toBe('P');
+    expect(container.children.item(3).textContent).toBe(story.author);
+    expect(container.children.item(4).tagName).toBe('P');
+  }
+
+  function expectDOMToMatchTemplateWithoutExcerpt(dom) {
+    expect(dom.childNodes.length).toBe(1);
+    var container = dom.firstChild;
+    expect(container.children.item(0).tagName).toBe('H1');
+    expect(container.children.item(0).textContent).toBe(story.title);
+    expect(container.children.item(1).tagName).toBe('DIV');
     expect(container.children.item(2).tagName).toBe('DIV');
     expect(container.children.item(2).textContent).toBe(story.body);
     expect(container.children.item(3).tagName).toBe('P');
@@ -73,6 +93,30 @@ describe('The class HTMLEmitter', function () {
       emitter.toDOM();
       expect(noopRender.render).toHaveBeenCalledWith(story.body, 'body');
       expect(noopRender.render).toHaveBeenCalledWith(story.excerpt, 'excerpt');
+    }
+  );
+
+  it('if the render fails, the section is ignored',
+    function () {
+      var emitter, html, dom,
+          failingRender = {
+            render: function(value) {
+              if (value === undefined) {
+                throw new Error('value is undefined!');
+              }
+              return value;
+            }
+          };
+
+      expect(emit).not.toThrow();
+      expectDOMToMatchTemplateWithoutExcerpt(dom);
+
+      function emit() {
+        emitter = new AutoBlog.HTMLEmitter(
+          storyWithoutExcerpt, template, failingRender),
+        html = emitter.toHTML(),
+        dom = AutoBlog.HTMLEmitter.getFragmentFromString(html);
+      }
     }
   );
 
