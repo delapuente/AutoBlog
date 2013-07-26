@@ -137,13 +137,9 @@ proper content:
 Some things worthing to remember:
 
  * Any content can be omitted
+ * The original template element is lost as the content of the `data-stream`
+ element is **completely replaced** by the stories of the stream.
  * The _placeholder attributes_ are removed so avoid using them in CSS or JS
- * The template is not removed but you can use a piece of CSS to hide it:<br/>
- ```
- [data-template] {
-   visibility: hidden;
- }
- ```
  * If you want support excerpt and body and you want to hide excerpt when it
  is empty mark the element for the excerpt with a class and use CSS pseudo-class
  `:empty`:<br/>

@@ -48,10 +48,6 @@ strong {
   color: #111;
 }
 
-[data-template] {
-  visibility: hidden;
-}
-
 .title {
   width: 100%;
   height: 10rem;
