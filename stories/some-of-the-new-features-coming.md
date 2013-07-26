@@ -4,7 +4,7 @@ here:
 +++
  * <del>Markdown support</del>.
  * <del>Story template customization</del>.
- * Readmore support.
+ * Quick streams
  * Pagination.
  * Searchs.
  * Tags & tagclouds.

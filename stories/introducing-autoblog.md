@@ -1,6 +1,8 @@
 Introducing AutoBlog
 AutoBlog is a little JavaScript utility to build static blogs with minimum
 server support. **Show the source of this page to see it in action!**
+
+[See the sources now](https://github.com/lodr/AutoBlog)!
 +++
 With AutoBlog you maintain folders called streams in the server and write
 your stories in plain text inside a stream. Each stream must have an
