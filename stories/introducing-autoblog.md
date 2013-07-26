@@ -1,8 +1,9 @@
 Introducing AutoBlog
-AutoBlog is a little JavaScript utility to build static blogs with minimum
-server support. **Show the source of this page to see it in action!**
 
-[See the sources now](https://github.com/lodr/AutoBlog)!
+AutoBlog is a little JavaScript utility to build static blogs with minimum
+server support.
+
+[Explore the source of this page to see it in action!](https://github.com/lodr/AutoBlog/blob/gh-pages/index.html)
 +++
 With AutoBlog you maintain folders called streams in the server and write
 your stories in plain text inside a stream. Each stream must have an
@@ -14,6 +15,10 @@ This is only a proof of concept of AutoBlog and several features are coming
 soon.
 
 ## AutoBlog setup
+
+[Clone or download the repository](https://github.com/lodr/AutoBlog) inside
+your project (there is not a minified standalone version yet but stay tunned,
+this is only an alpha).
 
 The minimal setup includes only three steps:
 
