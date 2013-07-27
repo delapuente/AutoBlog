@@ -54,9 +54,60 @@ describe('The class AutoBlog', function () {
       }, 'fillPlaceholder(streamPlaceholder) to finish', 1000);
 
       runs(function () {
-        expect(mainStream.childElementCount).toBe(2);
+        expect(mainStream.childElementCount).toBe(3);
       })
     }
   );
+
+  describe('Errors while filling placeholders', function() {
+    var RealHTMLEmitter = AutoBlog.HTMLEmitter,
+        FailingHTMLEmitter;
+
+    beforeEach(function () {
+      FailingHTMLEmitter = function fake() {
+        !fake.count && (fake.count = 0);
+        fake.count++;
+        if (fake.count === 2) {
+          throw new Error('Testing forced error in call number 2');
+        }
+        RealHTMLEmitter.apply(this, arguments);
+      };
+      FailingHTMLEmitter.prototype = RealHTMLEmitter.prototype;
+    });
+
+    afterEach(function () {
+      AutoBlog.HTMLEmitter = RealHTMLEmitter;
+    });
+
+    it('make filling to ignore (but log) broken stories',
+      function () {
+        var root = dom.firstChild,
+            autoblog = new AutoBlog.AutoBlog(root),
+            Stream = AutoBlog.Stream,
+            finished = false;
+
+        AutoBlog.HTMLEmitter = FailingHTMLEmitter;
+
+        runs(function () {
+          var streamPlaceholder = {
+            placeholder: mainStream,
+            stream: new Stream('spec/stories')
+          };
+          autoblog.fillPlaceholder(streamPlaceholder).then(function (result) {
+            finished = true;
+          });
+        });
+
+        waitsFor(function () {
+          return finished;
+        }, 'fillPlaceholder(streamPlaceholder) to finish', 1000);
+
+        runs(function () {
+          expect(mainStream.childElementCount).toBe(2);
+        });
+      }
+    );
+
+  });
 
 });

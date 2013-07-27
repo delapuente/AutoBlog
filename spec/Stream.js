@@ -3,9 +3,9 @@ describe('The class Stream', function () {
 
   var origin = window.location.origin,
       storiesPath = 'spec/stories',
-      referenceIndexSource = 'story1\nstory2',
+      referenceIndexSource = 'story1\nstory2\nstory3',
       referenceIndex = {
-        paths: ["story1", "story2"].map(function (storyName) {
+        paths: ["story1", "story2", "story3"].map(function (storyName) {
           return storiesPath + '/' + storyName;
         })
       },
@@ -19,6 +19,13 @@ describe('The class Stream', function () {
         },
         {
           title: 'Story 2',
+          excerpt: 'A short excerpt.',
+          body: 'An extended text.',
+          author: 'Bea',
+          date: new Date(2013, 0, 2)
+        },
+        {
+          title: 'Story 3',
           excerpt: 'A short excerpt.',
           body: 'An extended text.',
           author: 'Bea',

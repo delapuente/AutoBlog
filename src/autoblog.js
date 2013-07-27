@@ -3,6 +3,7 @@
   'use strict';
 
   var AutoBlog = global.AutoBlog = Object.create(null);
+  var _m = AutoBlog; // To allow dependency injection
 
   function to(obj) {
     return {
@@ -484,25 +485,38 @@
   _AutoBlog.prototype.fillPlaceholder = function (placeholder) {
     var self = this,
         stream = placeholder.stream;
-    return stream.load().then(renderStories);
+    return stream.load().then(function renderStories(stories) {
+      self.renderStories(placeholder, stories)
+    });
+  };
 
-    function renderStories(stories) {
-      var emitter,
-          render,
-          htmlBuffer = '',
-          storyTemplate = placeholder.template || self.storyTemplate,
-          root = placeholder.placeholder;
+  _AutoBlog.prototype.renderStories = function (placeholder, stories) {
+    var htmlBuffer = '', HTMLEmitter = _m.HTMLEmitter,
+        storyTemplate = placeholder.template || this.storyTemplate,
+        root = placeholder.placeholder;
 
-      stories.forEach(function (story) {
-        render = new XRender(story.fileName); // TODO: Make this configurable
-        emitter = new HTMLEmitter(story, storyTemplate, render);
-        htmlBuffer += emitter.toHTML();
-        htmlBuffer += '\n';
-      });
-      root.innerHTML = htmlBuffer;
-      return root;
+    stories.forEach(function (story) {
+      try { htmlBuffer += getRenderedStory(story); }
+      catch (error) { logError(story, error); }
+      htmlBuffer += '\n';
+    });
+
+    root.innerHTML = htmlBuffer;
+    return root;
+
+    function getRenderedStory(story) {
+      var  render = new XRender(story.fileName), // TODO: Make this configurable
+           emitter = new HTMLEmitter(story, storyTemplate, render);
+
+      return emitter.toHTML();
     }
-  }
+
+    function logError(story, error) {
+      var msg = story.fileName + ' is broken!\n' +
+                error.message + '\n' + error.stack;
+      console.error(msg);
+    }
+  };
 
   function discoverBlog() {
     var autoblog = global.autoblog = new _AutoBlog(document.body);
