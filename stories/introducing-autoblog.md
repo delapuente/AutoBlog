@@ -4,7 +4,7 @@ AutoBlog is a little JavaScript utility to build static blogs with minimum
 server support.
 
 [Explore the source of this page to see it in action!](https://github.com/lodr/AutoBlog/blob/gh-pages/index.html)
-+++
+
 With AutoBlog you maintain folders called streams in the server and write
 your stories in plain text inside a stream. Each stream must have an
 `index` file with a list of published stories.
@@ -13,7 +13,7 @@ By using Showdown, you can use Markdown to **format your story**.
 
 This is only a proof of concept of AutoBlog and several features are coming
 soon.
-
++++
 ## AutoBlog setup
 
 [Clone or download the repository](https://github.com/lodr/AutoBlog) inside

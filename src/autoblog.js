@@ -204,12 +204,9 @@
   };
 
   HTMLEmitter.prototype.makeContainer = function (root) {
-    var container = root.querySelector('[data-stream]') ||
-                    root.querySelector('[data-template]');
+    var container = root.querySelector('[data-template]');
 
-    if (container === null) { return; }
-
-    delete container.dataset.section;
+    container.id = this.story.fileName;
     delete container.dataset.template;
   };
 
@@ -433,13 +430,13 @@
   };
 
   var defaultStoryTemplate =
-  '<article data-container>\n' +
-    '<header><h1 data-title></h1></header>\n' +
-    '<section data-excerpt></section>\n' +
-    '<section data-body></section>\n' +
+  '<article data-template>\n' +
+    '<header><h1 class="story-title" data-title></h1></header>\n' +
+    '<section class="story-excerpt" data-excerpt></section>\n' +
+    '<section class="story-body" data-body></section>\n' +
     '<aside>\n' +
-      '<p data-author></p>\n' +
-      '<time pubdate data-date></time>\n' +
+      '<p class="story-author" data-author></p>\n' +
+      '<time class="story-date" pubdate data-date></time>\n' +
     '</aside>\n' +
   '</article>';
 
