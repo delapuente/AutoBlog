@@ -17,7 +17,7 @@ describe('The class HTMLEmitter', function () {
   };
 
   var template =
-  '<div data-container>\n'+
+  '<div data-template>\n'+
     '<h1 data-title></h1>\n' +
     '<div data-excerpt></div>\n' +
     '<div data-body></div>\n' +
