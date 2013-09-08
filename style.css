@@ -107,6 +107,7 @@ strong {
 
 .stories article .story-body:hover:before {
   background: none;
+  pointer-events: none;
 }
 
 .stories article .story-body:before {
