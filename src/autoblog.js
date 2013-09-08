@@ -14,10 +14,19 @@
     }
   }
 
-  function getURL(url) {
+  function getURL(url, noCache) {
+    noCache = noCache || false;
     return new Promise(function (resolver) {
       var xhr = new XMLHttpRequest();
       xhr.open('GET', url, true);
+      if (noCache) {
+        var bust = 'bust=' + Date.now();
+        url += (url.indexOf('?') !== -1 ? '&' : '?') + bust;
+        xhr.setRequestHeader('Pragma', 'no-cache');
+        xhr.setRequestHeader('Cache-Control', 'no-cache, must-revalidate');
+        xhr.setRequestHeader('Expires', 'Mon, 12 Jul 2010 03:00:00 GMT');
+        // FIXME: set to epoch instead?
+      }
       xhr.onreadystatechange = function (evt) {
         if (xhr.readyState === 4) {
           if (xhr.status === 200) {
@@ -33,7 +42,7 @@
 
   function getStory(url) {
     return new Promise(function (resolver) {
-      var source = getURL(url).then(
+      var source = getURL(url, true).then(
         function _onSuccess(source) {
           resolver.fulfill([source, url]);
         },
@@ -373,9 +382,9 @@
   };
 
   Stream.prototype.loadIndex = function () {
-    var indexPath = this.path + '/index?uid=' + Date.now();
+    var indexPath = this.path + '/index';
     if (this.index === null) {
-      this.index = getURL(indexPath).then(this.parseIndex.bind(this));
+      this.index = getURL(indexPath, true).then(this.parseIndex.bind(this));
     }
     return this.index;
   };
@@ -387,7 +396,7 @@
   Stream.prototype.loadStories = function (storyPaths) {
     var self = this;
     var promises = storyPaths.map(function (url) {
-      return getStory(url + '?uid=' + Date.now());
+      return getStory(url);
     });
     return Promise.every.apply(Promise, promises)
       .then(parseStories)
