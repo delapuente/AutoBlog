@@ -531,5 +531,10 @@
   }
 
   XRender.autodiscoverRenders();
-  document.addEventListener('DOMContentLoaded', discoverBlog);
+  if (document.readyState === 'interactive') {
+    discoverBlog();
+  }
+  else { 
+    document.addEventListener('DOMContentLoaded', discoverBlog);
+  }
 }(this));
